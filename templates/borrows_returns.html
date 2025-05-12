@@ -1,0 +1,161 @@
+{% extends 'baseLibrarian.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Borrows & Returns | GardenBook{% endblock %}
+
+{% block page %}Borrows & Returns{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid row m-2">
+
+  <!-- START BUTTONS -->
+  <div class=" row d-flex justify-content-end mb-3 gap-3">
+    <div class="col-auto">
+      <!-- ADD A NEW BORROW -->
+      <button class="btn btn-outline-brown" data-bs-toggle="modal" data-bs-target="#borrow-modal">+New Borrow</button>
+      <!-- ADD A NEW BORROW MODAL -->
+      <div class="modal fade" id="borrow-modal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="borrowModalLabel">Add a New Borrow</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form method="POST">
+
+                {% csrf_token %}
+                {% crispy form %}
+
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END ADD A NEW BORROW MODAL -->
+    </div>
+  </div>
+  <!-- END BUTTONS -->
+
+
+  <!-- START DISPLAY BOOK BORROWINGS -->
+  <div class="container-fluid row m-2">
+
+    <!-- Horizontal Search Bar -->
+    <form method="GET" class="bg-white shadow-sm rounded-20 p-4 mb-4">
+      <div class="row g-3 align-items-end">
+
+        <div class="col-md-4">
+          <label for="q" class="form-label">Book Title</label>
+          <input type="search" name="q" id="q" class="form-control" placeholder="Enter Book Title">
+        </div>
+
+        <div class="col-md-2">
+          <label for="borrowed_on" class="form-label">Borrowed On</label>
+          <input type="date" name="borrowed_on" id="borrowed_on" class="form-control">
+        </div>
+
+        <div class="col-md-2">
+          <label for="due_date" class="form-label">Due Date</label>
+          <input type="date" name="due_date" id="due_date" class="form-control">
+        </div>
+
+        <div class="col-md-2">
+          <label for="returned_on" class="form-label">Returned On</label>
+          <input type="date" name="returned_on" id="returned_on" class="form-control">
+        </div>
+
+        <div class="col-md-1">
+          <button class="btn btn-green w-100" type="submit">Search</button>
+        </div>
+
+        <div class="col-md-1">
+          <a href="{% url 'borrows-returns' %}" class="btn btn-green w-100">Reset</a>
+        </div>
+
+      </div>
+      <small>Press Enter <i class="bi bi-arrow-return-left"></i></small>
+    </form>
+
+
+    <!-- START TABLE SECTION -->
+    <div class="overflow-hidden shadow-sm p-0 rounded-20">
+
+      <table class="table align-middle m-0">
+        <thead class="bg-brown-second">
+          <tr>
+            <th scope="col">BOOK</th>
+            <th scope="col">BORROWER</th>
+            <th scope="col">BORROWED ON</th>
+            <th scope="col">DUE DATE</th>
+            <th scope="col">RETURNED ON</th>
+            <th scope="col">FINE</th>
+            <th scope="col">RETURN BOOK</th>
+            <th scope="col">PROCESS FINE</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white">
+          {% for borrow in borrows %}
+          <tr>
+            <td class="d-flex align-items-center gap-3">
+              <img src="book-cover-placeholder.png" alt="Book Cover" class="rounded"
+                style="width: 40px; height: 40px; background-color: #e0e0e0;">
+              <div>
+                <div class="fw-bold">{{borrow.book.title}}</div>
+                <small class="text-muted">{{borrow.book.author}}</small>
+              </div>
+            </td>
+            <td>{{borrow.borrower}}</td>
+            <td>{{borrow.borrow_date}}</td>
+            <td>{{borrow.due_date}}</td>
+            <td>{{borrow.return_date}}</td>
+            <td>{{borrow.fine}}</td>
+            <td>
+
+              {% if borrow.return_date %}
+              <span class="text-success">Returned</span>
+              {% else %}
+              <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="return_book">
+                <input type="hidden" name="borrow_id" value="{{ borrow.id }}">
+                <button type="submit" class="btn btn-outline-brown">Return</button>
+              </form>
+              {% endif %}
+
+            </td>
+            <td>
+              {% if borrow.is_fine_paid %}
+              <span class="text-success">Paid</span>
+              {% elif borrow.fine == 0 %}
+              <span class="text-success">No Fine</span>
+              {% else %}
+              <a href="{% url 'payment-page' borrow.borrower.id 'borrow' %}" class="btn btn-outline-brown">Pay</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if not borrows %}
+          <tr>
+            <td colspan="7" class="text-center">No borrowings found.</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+
+
+    <!-- END TABLE SECTION -->
+
+    <!-- END DISPLAY BOOK BORROWINGS -->
+
+  </div>
+  <!-- END DISPLAY BOOK BORROWINGS -->
+</div>
+{% endblock content %}

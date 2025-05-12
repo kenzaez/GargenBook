@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+
+{% block title %} Events | GardenBook {% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid row d-flex justify-content-center my-4">
+
+  <!-- START HORIZONTAL EVENT SEARCH BAR -->
+  <form method="GET" action="{% url 'events' %}" class="bg-white shadow-sm rounded-20 p-4" style="width: 75%;">
+    <div class="row align-items-end g-3">
+
+      <!-- SEARCH TEXT -->
+      <div class="col-md-6">
+        <label for="searchBar" class="form-label">Search</label>
+        <input type="search" name="q" class="form-control" id="searchBar" placeholder="Title, Description, Keywords...">
+      </div>
+
+      <!-- EVENT TYPE -->
+      <div class="col-md-2">
+        <label for="event_type" class="form-label">Event Type</label>
+        <select class="form-control" name="event_type" id="event_type">
+          <option value="">All types</option>
+          {% for type in types %}
+          <option value="{{ type }}">{{ type }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- DATE FILTER -->
+      <div class="col-md-2">
+        <label for="date_filter" class="form-label">Date</label>
+        <select class="form-control" name="date_filter" id="date_filter">
+          <option value="">Any Time</option>
+          <option value="year">This Year</option>
+          <option value="month">This Month</option>
+          <option value="week">This Week</option>
+        </select>
+      </div>
+
+      <!-- SEARCH BUTTON -->
+      <div class="col-md-1 d-grid">
+        <button type="submit" class="btn btn-green">Search</button>
+      </div>
+
+      <div class="col-md-1 d-grid">
+        <a href="{% url 'events' %}" class="btn btn-green">Reset</a>
+      </div>
+
+    </div>
+    <small>Press Enter <i class="bi bi-arrow-return-left"></i></small>
+  </form>
+  <!-- END HORIZONTAL EVENT SEARCH BAR -->
+
+  <div class="m-5">
+    <h3 class="m-5">Upcoming Events</h3>
+
+    <div class="row">
+      {% if events %}
+      {% for event in events %}
+      <div class="col-auto">
+        <div class="card mb-3 rounded-20" style="width: 50rem; height: 30rem;">
+          <div class="row g-0" style="height: 100%">
+            <div class="col-md-4">
+              <img src="{{ event.poster.url }}" class="img-fluid rounded-start" alt="event poster">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body bg-white overflow-hidden" style="height: 53%;">
+                <h5 class="card-title">{{ event.title }}</h5>
+                <div></div>
+                <p class="card-text">{{ event.description }}</p>
+              </div>
+              <div class="card-footer bg-white">
+                <p class="card-text">Starts: <small class="text-body-secondary">{{ event.start_datetime}}</small></p>
+                <p class="card-text">Ends: <small class="text-body-secondary">{{ event.end_datetime}}</small></p>
+                <p class="card-text">Location: <small class="text-body-secondary">{{ event.location}}</small></p>
+                <!-- Button to open event details -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                  data-bs-target="#eventDetails{{ event.id }}">
+                  Details
+                </button>
+
+                <!-- Modal 1: Event Details -->
+                <div class="modal fade" id="eventDetails{{ event.id }}" data-bs-backdrop="static"
+                  data-bs-keyboard="false" tabindex="-1" aria-labelledby="eventDetailsLabel{{ event.id }}"
+                  aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="eventDetailsLabel{{ event.id }}">{{ event.title }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="row">
+                          <div class="col-md-4">
+                            <img src="{{ event.poster.url }}" class="img-fluid rounded-start" alt="event poster">
+                          </div>
+                          <div class="col-md-8">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text">{{ event.description }}</p>
+                            <p class="card-text">Starts: 
+                              <small class="text-body-secondary">{{ event.start_datetime }}</small>
+                            </p>
+                            <p class="card-text">Ends: 
+                              <small class="text-body-secondary">{{ event.end_datetime }}</small>
+                            </p>
+                            <p class="card-text">Location: 
+                              <small class="text-body-secondary">{{ event.location }}</small>
+                            </p>
+                            <p class="card-text">Event Type: 
+                              <small class="text-body-secondary">{{ event.event_type }}</small>
+                            </p>
+                            <p class="card-text">Event Host: 
+                              <small class="text-body-secondary">{{ event.event_host }}</small>
+                            </p>
+                            <p class="card-text">Event Price: 
+                              <small class="text-body-secondary">{{ event.event_price }}</small>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <!-- Open register modal and close current -->
+                        <button class="btn btn-primary" data-bs-target="#registerEvent{{ event.id }}"
+                          data-bs-toggle="modal" data-bs-dismiss="modal">Register</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Modal 2: Register -->
+                <div class="modal fade" id="registerEvent{{ event.id }}" data-bs-backdrop="static"
+                  data-bs-keyboard="false" tabindex="-1" aria-labelledby="registerEventLabel{{ event.id }}"
+                  aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="registerEventLabel{{ event.id }}">Register for {{ event.title }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <form method="POST">
+                          {% csrf_token %}
+                          <div class="mb-3">
+                            <label for="username{{ event.id }}" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username{{ event.id }}" name="username"
+                              required>
+                          </div>
+                          <div class="mb-3">
+                            <label for="email{{ event.id }}" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email{{ event.id }}" name="email" required>
+                          </div>
+                          <button type="submit" class="btn btn-primary">Register</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="col-12 d-flex justify-content-center">
+        <p>No events found.</p>
+      </div>
+      {% endif %}
+      <!-- END EVENT CARD -->
+
+      {% if events.has_other_pages %}
+      <div class="col-12 d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            {% if events.has_previous %}
+            <li class="page-item">
+              <a class="page-link"
+                href="?page={{ events.previous_page_number }}&q={{ request.GET.q }}&event_type={{ request.GET.event_type }}&date_filter={{ request.GET.date_filter }}"
+                aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            {% endif %}
+
+            {% for page in events.paginator.page_range %}
+            <li class="page-item {% if events.number == page %}active{% endif %}">
+              <a class="page-link"
+                href="?page={{ page }}&q={{ request.GET.q }}&event_type={{ request.GET.event_type }}&date_filter={{ request.GET.date_filter }}">{{
+                page }}</a>
+            </li>
+            {% endfor %}
+
+            {% if events.has_next %}
+            <li class="page-item">
+              <a class="page-link"
+                href="?page={{ events.next_page_number }}&q={{ request.GET.q }}&event_type={{ request.GET.event_type }}&date_filter={{ request.GET.date_filter }}"
+                aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+
+
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+<!-- END CONTAINER -->
+
+{% endblock %}
